@@ -1,5 +1,4 @@
-const properties = require('./json/properties.json');
-const users = require('./json/users.json');
+// connect to the database using node-postgres
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -131,6 +130,7 @@ const getAllProperties = (options, limit = 10) => {
   JOIN property_reviews ON properties.id = property_id
   `;
 
+  //Queries for the WHERE condition
   if (options.city) {
     queryParams.push(`%${city}%`);
     queryString += `WHERE city LIKE $${queryParams.length} `;
