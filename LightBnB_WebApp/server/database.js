@@ -16,23 +16,23 @@ const pool = new Pool({
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithEmail = function(email) {
+const getUserWithEmail = function (email) {
   return pool
     .query(
       `SELECT *
       FROM users
       WHERE email = $1;`,
       [email])
-      .then((result) => {
-        if (result.rows) {
-          return result.rows[0];
-        } else {
-          return null;
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    .then((result) => {
+      if (result.rows) {
+        return result.rows[0];
+      } else {
+        return null;
+      }
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -41,23 +41,23 @@ exports.getUserWithEmail = getUserWithEmail;
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function(id) {
+const getUserWithId = function (id) {
   return pool
     .query(
       `SELECT *
       FROM users
       WHERE id = $1;`,
       [id])
-      .then((result) => {
-        if (result.rows) {
-          return result.rows[0];
-        } else {
-          return null;
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    .then((result) => {
+      if (result.rows) {
+        return result.rows[0];
+      } else {
+        return null;
+      }
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 }
 exports.getUserWithId = getUserWithId;
 
@@ -67,20 +67,20 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser =  function(user) {
+const addUser = function (user) {
   return pool
     .query(
       `INSERT INTO users (name, email, password)
       VALUES ($1, $2, $3)
       RETURNING *`,
       [user.name, user.email, user.password])
-      .then((result) => {
-        console.log(result.rows);
-        return result.rows[0];
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    .then((result) => {
+      console.log(result.rows);
+      return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 }
 exports.addUser = addUser;
 
@@ -91,7 +91,7 @@ exports.addUser = addUser;
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function(guest_id, limit = 10) {
+const getAllReservations = function (guest_id, limit = 10) {
   return pool
     .query(
       `SELECT reservations.*, properties.*, avg(rating) as average_rating
@@ -103,12 +103,12 @@ const getAllReservations = function(guest_id, limit = 10) {
       ORDER BY reservations.start_date
       LIMIT $2;`,
       [guest_id, limit])
-      .then((result) => {
-        return result.rows;
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    .then((result) => {
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 }
 exports.getAllReservations = getAllReservations;
 
@@ -120,36 +120,76 @@ exports.getAllReservations = getAllReservations;
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-// const getAllProperties = function(options, limit = 10) {
-//   const limitedProperties = {};
-//   for (let i = 1; i <= limit; i++) {
-//     limitedProperties[i] = properties[i];
-//   }
-//   return Promise.resolve(limitedProperties);
-// }
+
 const getAllProperties = (options, limit = 10) => {
-  return pool
-    .query(
-      `SELECT *
-      FROM properties
-      LIMIT $1
-      `,
-      [limit])
-      .then((result) => {
-        return result.rows;
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-  };
-  exports.getAllProperties = getAllProperties;
+
+  const queryParams = [];
+
+  let queryString = `
+  SELECT properties.*, avg(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_reviews ON properties.id = property_id
+  `;
+
+  if (options.city) {
+    queryParams.push(`%${city}%`);
+    queryString += `WHERE city LIKE $${queryParams.length} `;
+  }
+
+  if (options.owner_id) {
+    queryParams.push(`${options.owner_id}`);
+    if (queryParams.length === 1) {
+      queryString += `WHERE owner_id = $${queryParams.length} `;
+    } else {
+      queryString += `AND owner_id = $${queryParams.length} `;
+    }
+  }
+
+  if (options.minimum_price_per_night) {
+    queryParams.push(`${options.minimum_price_per_night * 100}`);
+    if (queryParams.length === 1) {
+      queryString += `WHERE cost_per_night >= $${queryParams.length} `;
+    } else {
+      queryString += `AND cost_per_night >= $${queryParams.length} `;
+    }
+  }
+
+  if (options.maximum_price_per_night) {
+    queryParams.push(`${options.maximum_price_per_night * 100}`);
+    if (queryParams.length === 1) {
+      queryString += `WHERE cost_per_night <= $${queryParams.length} `;
+    } else {
+      queryString += `AND cost_per_night <= $${queryParams.length} `;
+    }
+  }
+
+  // Add query that comes after the WHERE clause
+  queryString += `GROUP BY properties.id`;
+
+  if (options.minimum_rating) {
+    queryParams.push(`${options.minimum_rating}`);
+    queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
+  }
+
+  queryParams.push(limit);
+  queryString += `
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length};
+  `;
+
+  console.log(queryString, queryParams);
+
+  return pool.query(queryString, queryParams).then((res) => res.rows);
+
+};
+exports.getAllProperties = getAllProperties;
 
 /**
  * Add a property to the database
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
-const addProperty = function(property) {
+const addProperty = function (property) {
   const propertyId = Object.keys(properties).length + 1;
   property.id = propertyId;
   properties[propertyId] = property;
