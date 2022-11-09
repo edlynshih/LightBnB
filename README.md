@@ -6,26 +6,28 @@ Built with HTML, SASS, JS on the front-end, and Node, Express, SQL on the back-e
 
 ## Final Product
 
-!["screenshot of the homepage"](https://github.com/edlynshih/tweeter/blob/master/docs/Charcount.png)
+!["screenshot of the homepage"](https://github.com/edlynshih/LightBnB/blob/master/docs/homepage.png)
 
-!["screenshot of the desktop view"](https://github.com/edlynshih/tweeter/blob/master/docs/Desk-top%20view.png)
+!["screenshot of the create new listing page"](https://github.com/edlynshih/LightBnB/blob/master/docs/create-new-listing.png)
 
-!["screenshot of empty tweet error message"](https://github.com/edlynshih/tweeter/blob/master/docs/Empty%20tweet.png)
+!["screenshot of the my listings page"](https://github.com/edlynshih/LightBnB/blob/master/docs/my-listings.png)
 
-!["screenshot of exceed character count error message"](https://github.com/edlynshih/tweeter/blob/master/docs/Exceed%20charcount.png)
+!["screenshot of the login page"](https://github.com/edlynshih/LightBnB/blob/master/docs/login.png)
+
+!["screenshot of the signup page"](https://github.com/edlynshih/LightBnB/blob/master/docs/signup.png)
 
 ## Getting Started
 
 1. Fork this repository, then clone your fork of this repository.
 2. Install dependencies using the `npm install` command.
-3. Start the web server using the `npm run local` command. The app will be served at <http://localhost:8080/>.
-4. Go to <http://localhost:8080/> in your browser.
+3. Start the web server using the `npm run local` command. The app will be served at <http://localhost:3000>.
+4. Go to <http://localhost:3000> in your browser.
 
 ## Dependencies
 
-- Express
-- Node 5.10.x or above
-- Body-parser
-- Chance
-- Md5
-- Timeago.js
+- bcrypt: ^5.1.0
+- body-parser: ^1.19.0
+- cookie-session: ^1.3.3
+- express": ^4.17.1
+- nodemon": ^2.0.20
+- pg": ^8.8.0
